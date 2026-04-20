@@ -85,8 +85,7 @@ Instead of adding many features, I focused on:
 
 ## 📷 Demo
 
-(Add GIF or screenshots here)
-
+![Demo](./assets/demo.gif)
 ---
 
 ## 📚 Dictionary Data
