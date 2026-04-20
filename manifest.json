@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Dual Subtitles & Vocab",
+  "version": "1.2",
+  "description": "英語字幕・日本語字幕・難関単語訳を左上にまとめて表示します。",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://video.google.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://www.youtube.com/*"],
+      "js": ["dist/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/merged_cefr_advanced_ja.json",
+        "assets/phrasal_verbs_deepl_sorted.json"
+      ],
+      "matches": ["*://www.youtube.com/*"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
