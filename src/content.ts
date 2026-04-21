@@ -1,5 +1,5 @@
-import phraseDictData from "../assets/phraseDict.json";
-import wordDictData from "../assets/wordDict.json";
+import phraseDictData from "assets/phraseDict.json";
+import wordDictData from "assets/wordDict.json";
 
 type SubtitleData = {
   tStartMs: number;
