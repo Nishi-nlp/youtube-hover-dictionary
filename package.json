@@ -3,6 +3,11 @@
   "displayName": "YouTube Hover Dictionary",
   "version": "1.0.0",
   "private": true,
+  "manifest": {
+    "permissions": [
+      "storage"
+    ]
+  },
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build"

@@ -221,6 +221,10 @@ document.addEventListener("mousemove", (e) => {
  * Loads subtitle overlay settings from `chrome.storage.sync` and reapplies them to the DOM when present.
  */
 function loadSettings() {
+  if (!chrome?.storage?.sync) {
+    return;
+  }
+
   chrome.storage.sync.get(["settings"], (res) => {
     if (res.settings) {
       settings = res.settings as Settings;
@@ -232,8 +236,12 @@ function loadSettings() {
 if (chrome?.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes) => {
     if (changes.settings) {
-      settings = changes.settings.newValue;
-      applySettings();
+      const next = changes.settings.newValue as Partial<Settings> | undefined;
+
+      if (typeof next?.fontSize === "number" && typeof next?.bottom === "number") {
+        settings = { fontSize: next.fontSize, bottom: next.bottom };
+        applySettings();
+      }
     }
   });
 }

@@ -12,6 +12,8 @@ function Popup() {
   const [bottom, setBottom] = useState<number>(5)
 
   useEffect(() => {
+    if (!chrome?.storage?.sync) return
+
     chrome.storage.sync.get(["settings"], (res) => {
       const s = res.settings as Settings | undefined
 
@@ -23,6 +25,8 @@ function Popup() {
   }, [])
 
   const save = () => {
+    if (!chrome?.storage?.sync) return
+
     const settings: Settings = { fontSize, bottom }
     chrome.storage.sync.set({ settings })
   }
