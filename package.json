@@ -6,6 +6,10 @@
     "dev": "plasmo dev",
     "build": "plasmo build"
   },
+  "dependencies": {
+  "react": "^18.x",
+  "react-dom": "^18.x"
+},
   "devDependencies": {
     "@types/chrome": "^0.1.39",
     "@types/react": "^18.3.28",

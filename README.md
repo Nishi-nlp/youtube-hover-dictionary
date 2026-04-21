@@ -1,4 +1,4 @@
-# YouTube Dual Subtitle Helper
+# youtube-hover-dictionary
 
 A lightweight Chrome extension for learning English while watching YouTube — without interrupting playback.
 
