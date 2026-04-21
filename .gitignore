@@ -175,3 +175,7 @@ assets/phraseDict.json
 # Optional: keep sample files instead
 !assets/sample-wordDict.json
 !assets/sample-phraseDict.json
+
+node_modules/
+build/
+.plasmo/

@@ -1,6 +1,6 @@
 /// <reference types="react" />
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, type ChangeEvent } from "react"
 
 type Settings = {
   fontSize: number
@@ -12,6 +12,8 @@ function Popup() {
   const [bottom, setBottom] = useState<number>(5)
 
   useEffect(() => {
+    if (!chrome?.storage?.sync) return
+
     chrome.storage.sync.get(["settings"], (res) => {
       const s = res.settings as Settings | undefined
 
@@ -23,6 +25,8 @@ function Popup() {
   }, [])
 
   const save = () => {
+    if (!chrome?.storage?.sync) return
+
     const settings: Settings = { fontSize, bottom }
     chrome.storage.sync.set({ settings })
   }
@@ -36,7 +40,7 @@ function Popup() {
           min="12"
           max="40"
           value={fontSize}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
             setFontSize(Number(e.target.value))
           }
         />
@@ -49,7 +53,7 @@ function Popup() {
           min="0"
           max="50"
           value={bottom}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
             setBottom(Number(e.target.value))
           }
         />

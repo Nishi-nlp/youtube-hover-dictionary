@@ -1,3 +1,6 @@
+import phraseDictData from "../assets/phraseDict.json";
+import wordDictData from "../assets/wordDict.json";
+
 type SubtitleData = {
   tStartMs: number;
   dDurationMs: number;
@@ -14,13 +17,10 @@ let phrasalVerbDict: Record<string, any> = {};
  * @returns An object with `wordDict` (per-word entries) and `phraseDict` (phrasal-verb style phrases).
  */
 async function loadDict() {
-  const wordRes = await fetch(chrome.runtime.getURL("assets/wordDict.json"));
-  const loadedWordDict = await wordRes.json();
-
-  const phraseRes = await fetch(chrome.runtime.getURL("assets/phraseDict.json"));
-  const loadedPhraseDict = await phraseRes.json();
-
-  return { wordDict: loadedWordDict, phraseDict: loadedPhraseDict };
+  return {
+    wordDict: wordDictData as Record<string, any>,
+    phraseDict: phraseDictData as Record<string, any>
+  };
 }
 
 loadDict().then(({ wordDict: w, phraseDict: p }) => {
@@ -221,6 +221,10 @@ document.addEventListener("mousemove", (e) => {
  * Loads subtitle overlay settings from `chrome.storage.sync` and reapplies them to the DOM when present.
  */
 function loadSettings() {
+  if (!chrome?.storage?.sync) {
+    return;
+  }
+
   chrome.storage.sync.get(["settings"], (res) => {
     if (res.settings) {
       settings = res.settings as Settings;
@@ -232,8 +236,12 @@ function loadSettings() {
 if (chrome?.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes) => {
     if (changes.settings) {
-      settings = changes.settings.newValue;
-      applySettings();
+      const next = changes.settings.newValue as Partial<Settings> | undefined;
+
+      if (typeof next?.fontSize === "number" && typeof next?.bottom === "number") {
+        settings = { fontSize: next.fontSize, bottom: next.bottom };
+        applySettings();
+      }
     }
   });
 }

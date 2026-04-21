@@ -1,15 +1,21 @@
 {
   "name": "youtube-hover-dictionary",
+  "displayName": "YouTube Hover Dictionary",
   "version": "1.0.0",
   "private": true,
+  "manifest": {
+    "permissions": [
+      "storage"
+    ]
+  },
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build"
   },
   "dependencies": {
-  "react": "^18.x",
-  "react-dom": "^18.x"
-},
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
   "devDependencies": {
     "@types/chrome": "^0.1.39",
     "@types/react": "^18.3.28",
