@@ -1,5 +1,6 @@
 {
   "name": "youtube-hover-dictionary",
+  "displayName": "YouTube Hover Dictionary",
   "version": "1.0.0",
   "private": true,
   "scripts": {
