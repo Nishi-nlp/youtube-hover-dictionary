@@ -111,6 +111,7 @@ Please provide your own data in the following format:
   "take off": { "ja": "離陸する" }
 }
 
+```
 ---
 
 ## 📄 License
