@@ -168,10 +168,6 @@ Thumbs.db
 # Coverage
 coverage/
 
-# Dictionary data (exclude your private data)
-assets/wordDict.json
-assets/phraseDict.json
-
 # Optional: keep sample files instead
 !assets/sample-wordDict.json
 !assets/sample-phraseDict.json
