@@ -1,6 +1,6 @@
 /// <reference types="react" />
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, type ChangeEvent } from "react"
 
 type Settings = {
   fontSize: number
@@ -36,7 +36,7 @@ function Popup() {
           min="12"
           max="40"
           value={fontSize}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
             setFontSize(Number(e.target.value))
           }
         />
@@ -49,7 +49,7 @@ function Popup() {
           min="0"
           max="50"
           value={bottom}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
             setBottom(Number(e.target.value))
           }
         />

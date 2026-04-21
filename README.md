@@ -58,7 +58,7 @@ This extension solves that by showing meanings instantly on hover, allowing cont
    ```
 3. Open Chrome Extensions
 4. Enable Developer Mode
-5. Load the `dist` folder
+5. Load the `build/chrome-mv3-prod` folder
 
 ---
 
