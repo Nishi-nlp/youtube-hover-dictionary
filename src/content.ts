@@ -63,6 +63,7 @@ function saveSettings() {
 }
 
 const overlay = document.createElement("div");
+overlay.id = "youtube-hover-dictionary-overlay";
 
 document.body.appendChild(overlay);
 
@@ -86,27 +87,49 @@ overlay.style.lineHeight = "1.6";
 overlay.style.textAlign = "center";
 overlay.style.maxWidth = "70%";
 
-overlay.style.zIndex = "9999";
+/** Above YouTube chrome (≈9500+) so taps hit our spans, not the player layer. */
+overlay.style.zIndex = "2147483646";
 
 overlay.style.pointerEvents = "none";
 
-overlay.addEventListener("click", (e) => {
-  const target = (e.target as HTMLElement).closest("[data-word]") as HTMLElement | null;
-  const word = target?.dataset.word;
-  if (!word) return;
+/**
+ * Bubble phase `click` often never reaches overlay on YouTube (player eats it).
+ * Capture `pointerdown` on `document` so we run before the player's handlers.
+ */
+document.addEventListener(
+  "pointerdown",
+  (e) => {
+    const t = e.target;
+    if (!(t instanceof Element)) return;
 
-  e.stopPropagation();
-  e.preventDefault();
+    const span = t.closest("[data-word]") as HTMLElement | null;
+    if (!span || !overlay.contains(span)) return;
 
-  void saveWord(word);
+    e.preventDefault();
+    e.stopImmediatePropagation();
 
-  if (target) {
-    target.style.backgroundColor = "lightgreen";
-    setTimeout(() => {
-      target.style.backgroundColor = "";
-    }, 300);
-  }
-});
+    const word = span.dataset.word;
+    if (!word) return;
+
+    void (async () => {
+      const outcome = await persistWord(word);
+      if (outcome === "new") {
+        showToast(`Saved: ${word}`, 2000);
+        span.style.backgroundColor = "lightgreen";
+      } else if (outcome === "duplicate") {
+        showToast(`Already saved: ${word}`, 1600);
+        span.style.backgroundColor = "rgba(200,220,255,0.9)";
+      } else {
+        showToast("Could not save (check extension storage)", 2200);
+        return;
+      }
+      window.setTimeout(() => {
+        span.style.backgroundColor = "";
+      }, 280);
+    })();
+  },
+  true
+);
 
 let isEnabled = true;
 
@@ -142,18 +165,31 @@ overlay.addEventListener("mousemove", (e) => {
 
   const span = target.closest("[data-word]") as HTMLElement | null;
 
-  if (!span?.dataset.word) return;
+  if (!span?.dataset.word) {
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
+    }
+    return;
+  }
 
-  // Clear any pending show from the previous hover position
+  /** Popup only for words that exist in the bundled dictionary (see `wrapAllWords` → `dict-word`). */
+  if (!span.classList.contains("dict-word")) {
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
+    }
+    return;
+  }
+
   if (hoverTimer) {
     clearTimeout(hoverTimer);
   }
 
-  // Delay before showing the popup (avoids flicker when crossing many tokens)
   hoverTimer = window.setTimeout(() => {
     const word = span.dataset.word!;
     showMeaning(word, e.clientX, e.clientY);
-  }, 200); // Tuning knob: try 200–400 ms
+  }, 200);
 });
 
 function shouldHidePopup(e: MouseEvent, rect: DOMRect) {
@@ -251,23 +287,26 @@ if (chrome?.storage?.onChanged) {
 }
 
 /**
- * Displays a short message in the top-right corner for one second, then removes the node.
- * @param msg - Text to show (e.g. toggle state for subtitles)
+ * Short fixed notification (defaults ~1.2s). Uses a high z-index so it stays above the player chrome.
  */
-function showToast(msg: string) {
+function showToast(msg: string, durationMs = 1200) {
   const toast = document.createElement("div");
   toast.innerText = msg;
 
   toast.style.position = "fixed";
   toast.style.top = "20px";
   toast.style.right = "20px";
-  toast.style.background = "black";
+  toast.style.background = "#1a1a1a";
   toast.style.color = "white";
-  toast.style.padding = "8px";
+  toast.style.padding = "10px 14px";
+  toast.style.borderRadius = "8px";
+  toast.style.fontSize = "14px";
+  toast.style.boxShadow = "0 4px 16px rgba(0,0,0,0.35)";
+  toast.style.zIndex = "2147483647";
 
   document.body.appendChild(toast);
 
-  setTimeout(() => toast.remove(), 1000);
+  window.setTimeout(() => toast.remove(), durationMs);
 }
 
 /**
@@ -292,6 +331,9 @@ type SubtitleEventData = {
 
 // Holds the last merged caption string so we only append to subtitleData when it changes (module scope).
 let lastSubtitleText = "";
+
+/** Avoid resetting `overlay.innerHTML` every tick — that removes nodes before `click` can fire. */
+let lastRenderedSubtitleText: string | null = null;
 
 /**
  * Returns which phrase keys from `phrasalVerbDict` appear as whole words in `text` (after `normalize`).
@@ -327,17 +369,30 @@ type Word = {
   meaning: string
 }
 
-// ⭐ ここに追加
-async function saveWord(word: string) {
-  const result = await chrome.storage.local.get(["words"])
-  const words: Word[] = Array.isArray(result.words)
-    ? result.words
-    : []
+type PersistWordOutcome = "new" | "duplicate" | "error";
 
-  if (!words.find((w: any) => w.word === word)) {
-    words.push({ word, meaning: "" })
-    await chrome.storage.local.set({ words })
-    console.log("saved:", word)
+async function persistWord(word: string): Promise<PersistWordOutcome> {
+  try {
+    const storage = chrome?.storage?.local;
+    if (!storage) {
+      console.warn("youtube-hover-dictionary: chrome.storage.local unavailable");
+      return "error";
+    }
+
+    const result = await storage.get(["words"]);
+    const words: Word[] = Array.isArray(result.words) ? result.words : [];
+
+    if (words.some((w) => w.word === word)) {
+      return "duplicate";
+    }
+
+    words.push({ word, meaning: "" });
+    await storage.set({ words });
+    console.log("saved:", word);
+    return "new";
+  } catch (err) {
+    console.error("youtube-hover-dictionary: persistWord failed", err);
+    return "error";
   }
 }
 
@@ -511,9 +566,11 @@ function update() {
     }
   );
 
-  // overlay.innerHTML = highlightWorking;
-
-  overlay.innerHTML = wrapAllWords(latestSubtitleEntry.text);
+  const line = latestSubtitleEntry.text;
+  if (line !== lastRenderedSubtitleText) {
+    lastRenderedSubtitleText = line;
+    overlay.innerHTML = wrapAllWords(line);
+  }
 }
 
 loadSettings();
