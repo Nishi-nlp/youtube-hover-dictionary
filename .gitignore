@@ -175,3 +175,4 @@ coverage/
 node_modules/
 build/
 .plasmo/
+translate/

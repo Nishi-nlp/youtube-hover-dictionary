@@ -439,6 +439,10 @@ function applyCaptionHideAndWordStyles() {
 .dict-word {
   background-color: rgba(255,0,0,0.3);
 }
+
+.saved-word {
+  background-color: lightgreen;
+}
 `;
 }
 
@@ -571,6 +575,12 @@ function update() {
     lastRenderedSubtitleText = line;
     overlay.innerHTML = wrapAllWords(line);
   }
+
+  const newHTML = wrapAllWords(line);
+
+if (overlay.innerHTML !== newHTML) {
+  overlay.innerHTML = newHTML;
+}
 }
 
 loadSettings();
