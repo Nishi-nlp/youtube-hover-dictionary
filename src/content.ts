@@ -31,12 +31,7 @@ loadDict().then(({ wordDict: w, phraseDict: p }) => {
 });
 
 const style = document.createElement("style");
-
-style.innerHTML = `
-.ytp-caption-window-container {
-  display: none !important;
-}
-`;
+document.head.appendChild(style);
 
 type Settings = {
   fontSize: number;
@@ -45,7 +40,7 @@ type Settings = {
 
 let settings: Settings = {
   fontSize: 24,
-  bottom: 11,
+  bottom: 13,
 };
 
 settings.bottom = Math.max(0, Math.min(50, settings.bottom));
@@ -66,8 +61,6 @@ function applySettings() {
 function saveSettings() {
   localStorage.setItem("subtitleSettings", JSON.stringify(settings));
 }
-
-document.head.appendChild(style);
 
 const overlay = document.createElement("div");
 
@@ -97,7 +90,23 @@ overlay.style.zIndex = "9999";
 
 overlay.style.pointerEvents = "none";
 
-document.body.appendChild(overlay);
+overlay.addEventListener("click", (e) => {
+  const target = (e.target as HTMLElement).closest("[data-word]") as HTMLElement | null;
+  const word = target?.dataset.word;
+  if (!word) return;
+
+  e.stopPropagation();
+  e.preventDefault();
+
+  void saveWord(word);
+
+  if (target) {
+    target.style.backgroundColor = "lightgreen";
+    setTimeout(() => {
+      target.style.backgroundColor = "";
+    }, 300);
+  }
+});
 
 let isEnabled = true;
 
@@ -193,11 +202,6 @@ function showMeaning(raw: string, x: number, y: number) {
   meaningPopup.style.zIndex = "999999";
   meaningPopup.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
 
-}
-
-const ytCaption = document.querySelector(".ytp-caption-window-container");
-if (ytCaption) {
-  (ytCaption as HTMLElement).style.display = "none";
 }
 
 overlay.addEventListener("mouseleave", () => {
@@ -318,6 +322,74 @@ function normalize(word: string) {
     .replace(/(ing|ed|s)$/, "");
 }
 
+type Word = {
+  word: string
+  meaning: string
+}
+
+// ⭐ ここに追加
+async function saveWord(word: string) {
+  const result = await chrome.storage.local.get(["words"])
+  const words: Word[] = Array.isArray(result.words)
+    ? result.words
+    : []
+
+  if (!words.find((w: any) => w.word === word)) {
+    words.push({ word, meaning: "" })
+    await chrome.storage.local.set({ words })
+    console.log("saved:", word)
+  }
+}
+
+function wrapAllWords(text: string) {
+  const words = text.split(/(\b[a-zA-Z']+\b)/)
+
+  return words
+    .map((part) => {
+      if (/^[a-zA-Z']+$/.test(part)) {
+        const lower = part.toLowerCase()
+
+        const isInDict =
+          phrasalVerbDict[lower] || wordDict[lower]
+
+        return `<span
+          data-word="${lower}"
+          class="word ${isInDict ? "dict-word" : ""}"
+        >${part}</span>`
+      }
+      return part
+    })
+    .join("")
+}
+
+function applyCaptionHideAndWordStyles() {
+  style.textContent = `
+.ytp-caption-window-container,
+.ytp-caption-window {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.word {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.word:hover {
+  background-color: rgba(255,255,0,0.3);
+}
+
+.dict-word {
+  background-color: rgba(255,0,0,0.3);
+}
+`;
+}
+
+applyCaptionHideAndWordStyles();
+
+
 /**
  * Polls the page for YouTube caption segments, mirrors the latest line into `subtitleData`,
  * repositions the overlay under the caption window, and renders HTML with difficult words (red) and
@@ -331,7 +403,12 @@ function update() {
 
   overlay.style.display = "block";
 
-  const captions = document.querySelectorAll(".ytp-caption-segment");
+  const captionRoot =
+    document.querySelector(".html5-video-player .ytp-caption-window-container") ??
+    document.querySelector(".ytp-caption-window-container");
+  const captions = captionRoot
+    ? captionRoot.querySelectorAll(".ytp-caption-segment")
+    : document.querySelectorAll(".html5-video-player .ytp-caption-segment");
 
   const captionTextCombined = Array.from(captions)
     .map((el) => el.textContent)
@@ -353,7 +430,9 @@ function update() {
   const video = document.querySelector("video") as HTMLVideoElement | null;
   const player = document.querySelector(".html5-video-player");
 
-  const captionContainer = document.querySelector(".ytp-caption-window-container");
+  const captionContainer =
+    document.querySelector(".html5-video-player .ytp-caption-window-container") ??
+    document.querySelector(".ytp-caption-window-container");
   captionContainer?.parentElement?.appendChild(overlay);
   // console.log(video)
   // console.log(player)
@@ -432,7 +511,9 @@ function update() {
     }
   );
 
-  overlay.innerHTML = highlightWorking;
+  // overlay.innerHTML = highlightWorking;
+
+  overlay.innerHTML = wrapAllWords(latestSubtitleEntry.text);
 }
 
 loadSettings();
