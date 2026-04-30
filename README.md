@@ -116,7 +116,10 @@ Instead of adding many features, I focused on:
 
 ## 📷 Demo
 
+- Words are highlighted, and their meanings appear on hover
 ![Demo](./assets/demo.gif)
+
+- Click words to save them instantly
 ![Demo](./assets/demo2.gif)
 
 ---
