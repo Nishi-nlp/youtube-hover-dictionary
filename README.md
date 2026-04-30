@@ -6,13 +6,26 @@ A lightweight Chrome extension for learning English while watching YouTube — w
 
 ## ✨ Features
 
-* 🎬 Custom subtitles overlay on YouTube
-* 🔍 Highlight important words and phrases
-* 🧠 Hover to instantly see meanings (no pause needed)
-* 🎯 Minimal UI for distraction-free learning
-* ⚡ Fast and lightweight compared to heavy tools
+- Custom subtitle overlay on YouTube
+- Highlights important words and phrases
+- Hover to instantly see meanings (no pause needed)
+- Save words by clicking on them
+- View saved words in the popup
+- Delete saved words
+- Adjust display settings using keyboard shortcuts
 
 Currently optimized for Japanese learners (Japanese translations included).
+---
+
+## 🆕 New Feature: Word Saving
+
+Added a feature to save words by clicking on them.
+
+**What you can do**
+- Save words directly from subtitles by clicking
+- View saved words in the popup
+- Delete unnecessary words
+
 ---
 
 ## 💡 Concept
@@ -40,10 +53,28 @@ This extension solves that by showing meanings instantly on hover, allowing cont
 
 ## 🚀 How It Works
 
-1. Captures YouTube subtitles
-2. Detects important words and phrases
-3. Highlights them in real-time
-4. Shows meanings on hover
+- Captures YouTube subtitles in real-time
+- Wraps each word to make it interactive
+- Highlights important words and phrases
+- Displays meanings on hover
+
+---
+
+## 📝 How to Use
+1. Enable English subtitles on YouTube
+2. Click any word you want to save
+3. Open the extension popup to view saved word
+
+---
+
+## ⌨️ Keyboard Shortcuts
+
+| Key         | Action                    |
+| ----------- | ------------------------- |
+| `S`         | Toggle subtitles ON / OFF |
+| `ArrowDown` | Move subtitles downward   |
+| `+`         | Increase font size        |
+| `-`         | Decrease font size        |
 
 ---
 
@@ -86,6 +117,8 @@ Instead of adding many features, I focused on:
 ## 📷 Demo
 
 ![Demo](./assets/demo.gif)
+![Demo](./assets/demo2.gif)
+
 ---
 
 ## 📚 Dictionary Data
